@@ -7,7 +7,8 @@ defmodule Durak do
     import Supervisor.Spec, warn: false
 
     children = [
-      worker(__MODULE__, [], function: :run)
+      worker(__MODULE__, [], function: :run),
+      worker(Durak.Db, [])
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
@@ -17,6 +18,6 @@ defmodule Durak do
   end
 
   def run do
-    { :ok, _ } = Plug.Adapters.Cowboy.http Durak.Router, []
+    { :ok, _ } = Plug.Adapters.Cowboy.http Router, []
   end
 end

@@ -10,7 +10,8 @@ defmodule Durak.Game do
     game = Store.get_by(status: @waiting)
 
     unless game do
-      game = Store.set(%Game{game_id: :rand.uniform(50)})
+      game = %Game{game_id: :rand.uniform(50)}
+      Store.set(game)
     end
 
     game

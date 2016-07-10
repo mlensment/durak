@@ -12,6 +12,10 @@ defmodule Durak.Store do
     :ok = GenServer.cast(Store, {:set, game})
   end
 
+  def all do
+    GenServer.call(Store, :all)
+  end
+
   def get_by(attrs) do
     GenServer.call(Store, {:get_by_attrs, attrs})
   end
@@ -26,19 +30,25 @@ defmodule Durak.Store do
     {:ok, []}
   end
 
+
   def handle_cast({:set, game}, state) do
     {:noreply, [struct_to_map(game) | state]}
   end
 
-  # def handle_cast(:clear, _state) do
-  #   {:noreply, zero_state}
-  # end
+  def handle_cast(:clear, _state) do
+    {:noreply, []}
+  end
+
+  def handle_call(:all, _from, state) do
+    {:reply, state, state}
+  end
 
   def handle_call({:get_by_attrs, attrs}, _from, state) do
     attrs = Enum.into(attrs, %{})
     game = state |> Enum.find(&MapHelper.contains?(&1, attrs)) |> map_to_struct
     {:reply, game, state}
   end
+
 
   defp struct_to_map(struct) do
     Map.delete(struct, :__struct__)

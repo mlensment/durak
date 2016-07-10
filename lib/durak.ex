@@ -8,7 +8,7 @@ defmodule Durak do
 
     children = [
       worker(__MODULE__, [], function: :run),
-      worker(Durak.Db, [])
+      worker(Durak.Store, [])
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html

@@ -9,7 +9,11 @@ defmodule Durak.Store do
   end
 
   def set(game) do
-    :ok = GenServer.cast(Store, {:set, game})
+    GenServer.call(Store, {:set, game})
+  end
+
+  def update(game) do
+    GenServer.call(Store, {:update, game})
   end
 
   def all do
@@ -21,7 +25,7 @@ defmodule Durak.Store do
   end
 
   def clear do
-    :ok = GenServer.cast(Store, :clear)
+    :ok = GenServer.cast(Store  , :clear)
   end
 
   ### Server Callbacks
@@ -30,13 +34,18 @@ defmodule Durak.Store do
     {:ok, []}
   end
 
-
-  def handle_cast({:set, game}, state) do
-    {:noreply, [struct_to_map(game) | state]}
-  end
-
   def handle_cast(:clear, _state) do
     {:noreply, []}
+  end
+
+  def handle_call({:set, game}, _from, state) do
+    {:reply, game, [struct_to_map(game) | state]}
+  end
+
+  def handle_call({:update, game}, _form, state) do
+    index = state |> Enum.find_index(&MapHelper.contains?(&1, %{id: game.id}))
+    state = state |> List.update_at(index, fn _x -> struct_to_map(game) end)
+    {:reply, game, state}
   end
 
   def handle_call(:all, _from, state) do

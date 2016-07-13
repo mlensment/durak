@@ -1,5 +1,6 @@
 defmodule Router do
   use Plug.Router
+  alias Durak.Game
 
   if Mix.env == :dev do
     use Plug.Debugger
@@ -11,10 +12,8 @@ defmodule Router do
 
   # Root path
   get "/" do
-    # game = Durak.Game.find_or_create_game
-    # game_id = game...
-    # player_count = game...
-    conn |> send_resp(200, Poison.encode!(%{game_id: 123, player_count: 0}))
+    game = Game.find_or_create_game
+    conn |> send_resp(200, Poison.encode!(game))
   end
 
   get "/about/:name" when name == "history" do

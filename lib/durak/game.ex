@@ -4,17 +4,21 @@ defmodule Durak.Game do
   alias __MODULE__
 
   @waiting "waiting"
-  defstruct status: @waiting, game_id: nil
+  @started "started"
+  defstruct status: @waiting, id: nil
 
-  def find_or_create_game do
+  def find_or_create do
     game = Store.get_by(status: @waiting)
 
     unless game do
-      game = %Game{game_id: :rand.uniform(50)}
-      Store.set(game)
+      game = Store.set(%Game{id: :rand.uniform(50)})
     end
 
     game
+  end
+
+  def start(game) do
+    Store.update(%{game | status: @started})
   end
 
   # def render(conn, controller, action) do

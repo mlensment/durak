@@ -18,6 +18,10 @@ defmodule Durak do
   end
 
   def run do
-    { :ok, _ } = Plug.Adapters.Cowboy.http Router, []
+    { :ok, _ } = Plug.Adapters.Cowboy.http Router, [], port: port(Mix.env)
   end
+
+  defp port(:dev), do: 4000
+  defp port(:test), do: 4001
+  defp port(:prod), do: 80
 end

@@ -14,9 +14,11 @@ defmodule Durak.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger, :cowboy, :plug, :poison, :remix],
-     mod: {Durak, []}]
+    [applications: applications(Mix.env), mod: {Durak, []}]
   end
+
+  defp applications(:dev), do: applications(:all) ++ [:remix]
+  defp applications(_all), do: [:logger, :cowboy, :plug, :poison]
 
   # Dependencies can be Hex packages:
   #

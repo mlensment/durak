@@ -33,6 +33,7 @@ defmodule Durak.Mixfile do
     [{:cowboy, "~> 1.0.0"},
     {:plug, "~> 0.12"},
     {:poison, "~> 1.4.0"},
+    {:secure_random, "~> 0.5.0"},
     {:remix, "~> 0.0.1", only: :dev}]
   end
 end

@@ -1,4 +1,19 @@
 defmodule Util.MapHelper do
+  def attrs_to_struct(attrs, type) do
+    attrs |> attrs_to_map |> map_to_struct(type)
+  end
+
+  def attrs_to_map(attrs) do
+    Enum.into(attrs, %{})
+  end
+
+  def struct_to_map(struct) do
+    Map.delete(struct, :__struct__)
+  end
+
+  def map_to_struct(map, type), do: struct(type, map)
+  def map_to_struct(nil), do: nil
+
   def contains?(supermap, submap) do
     # Convert the submap into a list of key-value pairs where each key
     # is a list representing the keypath of its corresponding value.

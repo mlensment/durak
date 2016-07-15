@@ -5,7 +5,7 @@ defmodule Durak.Game do
 
   @waiting "waiting"
   @started "started"
-  defstruct status: @waiting, id: nil
+  defstruct status: @waiting, id: nil, players: []
 
   def find_or_create do
     game = Store.get_by(status: @waiting)
@@ -18,7 +18,21 @@ defmodule Durak.Game do
   end
 
   def start(game) do
-    Store.update(%{game | status: @started})
+    %{game | status: @started} |> update
+  end
+
+  def join(game, player) do
+    game = put_in(game.players, [player | game.players]) |> update
+
+    if length(game.players) == 5 do
+      game = game |> start
+    end
+
+    game
+  end
+
+  def update(game) do
+    Store.update(game)
   end
 
   # def render(conn, controller, action) do

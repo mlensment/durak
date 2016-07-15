@@ -1,8 +1,8 @@
 defmodule Durak.Store do
   use GenServer
+  import Util.MapHelper
   alias Durak.Store
   alias Durak.Game
-  alias Util.MapHelper
 
   def start_link do
     {:ok, _pid} = GenServer.start_link(__MODULE__, [], name: __MODULE__)
@@ -43,7 +43,7 @@ defmodule Durak.Store do
   end
 
   def handle_call({:update, game}, _form, state) do
-    index = state |> Enum.find_index(&MapHelper.contains?(&1, %{id: game.id}))
+    index = state |> Enum.find_index(&map_contains?(&1, %{id: game.id}))
     state = state |> List.update_at(index, fn _x -> struct_to_map(game) end)
     {:reply, game, state}
   end
@@ -53,21 +53,8 @@ defmodule Durak.Store do
   end
 
   def handle_call({:get_by_attrs, attrs}, _from, state) do
-    attrs = Enum.into(attrs, %{})
-    game = state |> Enum.find(&MapHelper.contains?(&1, attrs)) |> map_to_struct
+    attrs = attrs_to_map(attrs)
+    game = state |> Enum.find(&map_contains?(&1, attrs)) |> map_to_struct(Game)
     {:reply, game, state}
-  end
-
-
-  defp struct_to_map(struct) do
-    Map.delete(struct, :__struct__)
-  end
-
-  defp map_to_struct(map = %{}) do
-    struct(Game, map)
-  end
-
-  defp map_to_struct(nil) do
-    nil
   end
 end

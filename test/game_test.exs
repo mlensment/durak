@@ -1,9 +1,9 @@
 defmodule GameTest do
+  doctest Durak.Game
   use ExUnit.Case
   alias Durak.Game
   alias Durak.Player
   alias Durak.Store
-  doctest Durak.Game
 
   setup do
     Store.clear
@@ -48,5 +48,7 @@ defmodule GameTest do
     assert length(game.players) == 5
     assert game.status == "started"
 
+    game_2 = Game.find_or_create
+    assert game != game_2
   end
 end

@@ -11,10 +11,10 @@ defmodule Util.MapHelper do
     Map.delete(struct, :__struct__)
   end
 
-  def map_to_struct(map, type), do: struct(type, map)
-  def map_to_struct(nil), do: nil
+  def map_to_struct(map = %{}, type), do: struct(type, map)
+  def map_to_struct(nil, type), do: nil
 
-  def contains?(supermap, submap) do
+  def map_contains?(supermap, submap) do
     # Convert the submap into a list of key-value pairs where each key
     # is a list representing the keypath of its corresponding value.
     flatten_with_list_keys(submap)

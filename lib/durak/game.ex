@@ -5,24 +5,29 @@ defmodule Durak.Game do
 
   @waiting "waiting"
   @started "started"
-  defstruct status: @waiting, id: nil, players: []
+  defstruct status: @waiting, id: nil, in_turn: nil, players: []
 
   def find_or_create do
     game = Store.get_by(status: @waiting)
 
     unless game do
-      game = Store.set(%Game{id: :rand.uniform(50)})
+      game = Store.set(%Game{id: SecureRandom.uuid})
     end
 
     game
   end
 
   def start(game) do
-    %{game | status: @started} |> update
+    player_count = length(game.players)
+    if player_count > 1 && player_count < 6 do
+      %{game | status: @started, in_turn: List.first(game.players) } |> update
+    else
+      {:error, "Amount of players must be between 2 and 5"}
+    end
   end
 
   def join(game, player) do
-    game = put_in(game.players, [player | game.players]) |> update
+    game = put_in(game.players, game.players ++ [player]) |> update
 
     if length(game.players) == 5 do
       game = game |> start

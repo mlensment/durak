@@ -1,9 +1,9 @@
 defmodule GameTest do
-  doctest Durak.Game
   use ExUnit.Case
   alias Durak.Game
   alias Durak.Player
   alias Durak.Store
+  doctest Durak.Game
 
   setup do
     Store.clear
@@ -24,11 +24,20 @@ defmodule GameTest do
   end
 
   test "starting the game", state do
-    game_1 = Game.start(state[:game])
-    assert game_1.status == "started"
+    {:error, reason} = Game.start(state[:game])
+    assert reason == "Amount of players must be between 2 and 5"
 
+    game =
+      state[:game] |>
+      Game.join(Player.create(name: "Player 1")) |>
+      Game.join(Player.create(name: "Player 2"))
+
+    game = Game.start(game)
+    assert game.status == "started"
     game_2 = Game.find_or_create
     assert game_2.status == "waiting"
+
+    assert game.in_turn == List.first(game.players)
   end
 
   test "automatically starting the game", state do

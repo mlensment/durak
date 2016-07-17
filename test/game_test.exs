@@ -15,12 +15,17 @@ defmodule GameTest do
     assert state[:game] != nil
     assert state[:game].__struct__ == Game
     assert state[:game] == game_2
+
+    assert length(state[:game].deck) == 55
   end
 
   test "joining the game", state do
     player = Player.create(name: "Player 1")
     game = state[:game] |> Game.join(player)
-    assert game.players == [player]
+    assert length(game.players) == 1
+
+    %{name: name} = Enum.at(game.players, 0)
+    assert name == "Player 1"
   end
 
   test "starting the game", state do
@@ -38,6 +43,7 @@ defmodule GameTest do
     assert game_2.status == "waiting"
 
     assert game.in_turn == List.first(game.players)
+    assert length(game.deck) == 37
   end
 
   test "automatically starting the game", state do

@@ -1,17 +1,18 @@
 defmodule Durak.Game do
   import Plug.Conn
   alias Durak.Store
+  alias Durak.Deck
   alias __MODULE__
 
   @waiting "waiting"
   @started "started"
-  defstruct status: @waiting, id: nil, in_turn: nil, players: []
+  defstruct status: @waiting, id: nil, in_turn: nil, deck: [], players: []
 
   def find_or_create do
     game = Store.get_by(status: @waiting)
 
     unless game do
-      game = Store.set(%Game{id: SecureRandom.uuid})
+      game = %Game{id: SecureRandom.uuid, deck: Deck.prepare} |> Store.set
     end
 
     game
@@ -27,7 +28,14 @@ defmodule Durak.Game do
   end
 
   def join(game, player) do
-    game = put_in(game.players, game.players ++ [player]) |> update
+    {deck, player} = Deck.deal(game.deck, player)
+
+    game = %{game |
+      players: game.players ++ [player],
+      deck: deck
+    }
+
+    update(game)
 
     if length(game.players) == 5 do
       game = game |> start
@@ -36,7 +44,7 @@ defmodule Durak.Game do
     game
   end
 
-  def update(game) do
+  defp update(game) do
     Store.update(game)
   end
 

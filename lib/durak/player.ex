@@ -2,7 +2,7 @@ defmodule Durak.Player do
   import Util.MapHelper
   alias __MODULE__
 
-  defstruct id: nil, name: nil
+  defstruct id: nil, name: nil, downcards: [], upcards: [], hand: []
 
   def create(attrs) do
     attrs = [id: SecureRandom.uuid] ++ attrs

@@ -11,13 +11,13 @@ defmodule Durak.Deck do
   end
 
   def deal(deck, player) do
-    card_to_give = Enum.take(deck, 9) |> Enum.chunk(3)
+    cards_to_give = Enum.take(deck, 9) |> Enum.chunk(3)
     remaining_deck = Enum.drop(deck, 9)
 
     player = %{player |
-      downcards: Enum.at(card_to_give, 0),
-      upcards: Enum.at(card_to_give, 1),
-      hand: Enum.at(card_to_give, 2)
+      downcards: Enum.at(cards_to_give, 0),
+      upcards: Enum.at(cards_to_give, 1),
+      hand: Enum.at(cards_to_give, 2)
     }
 
     {remaining_deck, player}

@@ -17,7 +17,7 @@ defmodule Durak.Game do
   def find_or_create do
     game = Store.get_by(status: @waiting)
 
-    unless game do
+    if !game || length(game.players) >= 5 do
       game = %Game{id: SecureRandom.uuid, deck: Deck.prepare} |> Store.set
     end
 
@@ -36,10 +36,13 @@ defmodule Durak.Game do
 
   def start(game) do
     player_count = length(game.players)
-    if player_count > 1 && player_count < 6 do
-      %{game | status: @started, in_turn: List.first(game.players) } |> update
-    else
-      {:error, "Amount of players must be between 2 and 5"}
+    cond do
+      player_count <= 1 || player_count > 5 ->
+        {:error, "Amount of players must be between 2 and 5"}
+      Enum.any?(game.players, fn x -> x.status != "ready" end) ->
+        {:error, "All players must be ready to start the game"}
+      true ->
+        %{game | status: @started, in_turn: List.first(game.players) } |> update
     end
   end
 
@@ -51,18 +54,13 @@ defmodule Durak.Game do
     game = %{game |
       players: game.players ++ [player],
       deck: deck
-    }
-
-    update(game)
-
-    if length(game.players) == 5 do
-      game = game |> start
-    end
+    } |> update
 
     {game, player}
   end
 
-  def prepare_player(game, player, attrs) do
+  def prepare_player(token, attrs) do
+    {game, player} = find_game_and_player(token) # easier to find again instead of trying to hold state all the time
     cards_to_swich = player.hand ++ player.upcards
     upcards = Enum.reduce(attrs[:hand], cards_to_swich, fn (x, acc) -> List.delete(acc, x) end)
 

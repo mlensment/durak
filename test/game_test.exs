@@ -42,23 +42,35 @@ defmodule GameTest do
     assert length(hand) == 3
     assert length(upcards) == 3
     assert length(downcards) == 3
+
+    players = for n <- 2..5, do: Player.create(name: "Player #{n}")
+
+    {game, _player} =
+      players |>
+      Enum.reduce(game, fn(x, acc) -> Game.join(acc, x) end)
+
+    assert length(game.players) == 5
+
+    # should not allow more than 5 players into one game
+    game_2 = Game.find_or_create
+    assert game != game_2
   end
 
   test "preparing a player", state do
     player = Player.create(name: "Player 1")
-    {game, player} = state[:game] |> Game.join(player)
+    {_game, player} = state[:game] |> Game.join(player)
     hand = player.hand
     upcards = player.upcards
     downcards = player.downcards
 
     # try to cheat by selecting one of the downcards
     cheating = [Enum.at(downcards, 0)] ++ [Enum.at(upcards, 0)] ++ [Enum.at(hand, 0)]
-    {:error, reason} = Game.prepare_player(game, player, hand: cheating)
+    {:error, reason} = Game.prepare_player(player.token, hand: cheating)
 
     assert reason == "Player must select from upcards and hand"
 
     # switch upcards and downcards
-    {_game, player} = Game.prepare_player(game, player, hand: player.upcards)
+    {_game, player} = Game.prepare_player(player.token, hand: player.upcards)
     assert player.hand == upcards
     assert player.upcards == hand
     assert player.status == "ready"
@@ -68,11 +80,17 @@ defmodule GameTest do
     {:error, reason} = Game.start(state[:game])
     assert reason == "Amount of players must be between 2 and 5"
 
-    {game, _player} =
+    {game, player} =
       state[:game] |>
       Game.join(Player.create(name: "Player 1")) |>
       Game.join(Player.create(name: "Player 2"))
 
+    {:error, reason} = Game.start(game)
+    assert reason == "All players must be ready to start the game"
+
+    Enum.each(game.players, fn x -> Game.prepare_player(x.token, hand: x.upcards) end)
+
+    {game, player} = Game.find_game_and_player(player.token)
     game = Game.start(game)
     assert game.status == "started"
     game_2 = Game.find_or_create
@@ -80,26 +98,5 @@ defmodule GameTest do
 
     assert game.in_turn == List.first(game.players)
     assert length(game.deck) == 37
-  end
-
-  test "automatically starting the game", state do
-    players = for n <- 1..4, do: Player.create(name: "Player #{n}")
-    {game, _player} =
-      players |>
-      Enum.reduce(state[:game], fn(x, acc) -> Game.join(acc, x) end)
-
-    assert length(game.players) == 4
-    assert game.status == "waiting"
-
-    game_2 = Game.find_or_create
-    assert game == game_2
-
-    # when we have 5 players, game should start automatically
-    {game, _player} = game |> Game.join(Player.create(name: "Player 5"))
-    assert length(game.players) == 5
-    assert game.status == "started"
-
-    game_2 = Game.find_or_create
-    assert game != game_2
   end
 end

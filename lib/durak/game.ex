@@ -61,8 +61,8 @@ defmodule Durak.Game do
 
   def prepare_player(token, attrs) do
     {game, player} = find_game_and_player(token) # easier to find again instead of trying to hold state all the time
-    cards_to_swich = player.hand ++ player.upcards
-    upcards = Enum.reduce(attrs[:hand], cards_to_swich, fn (x, acc) -> List.delete(acc, x) end)
+    cards_to_switch = player.hand ++ player.upcards
+    upcards = Enum.reduce(attrs[:hand], cards_to_switch, fn (x, acc) -> List.delete(acc, x) end)
 
     if length(upcards) != 3 do
       {:error, "Player must select from upcards and hand"}

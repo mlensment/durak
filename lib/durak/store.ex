@@ -2,13 +2,14 @@ defmodule Durak.Store do
   use GenServer
   import Util.MapHelper
   alias Durak.Store
-  alias Durak.Game
 
   def start_link do
     {:ok, _pid} = GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
   def set(game) do
+    # Enum.each(game.players, &GenServer.call(Store, {:set, &1}))
+    # game = Map.delete(game, :players)
     GenServer.call(Store, {:set, game})
   end
 
@@ -39,12 +40,13 @@ defmodule Durak.Store do
   end
 
   def handle_call({:set, game}, _from, state) do
-    {:reply, game, [struct_to_map(game) | state]}
+    {:reply, game, [game | state]}
+    # {:reply, game, [struct_to_map(game) | state]}
   end
 
   def handle_call({:update, game}, _form, state) do
     index = state |> Enum.find_index(&map_contains?(&1, %{id: game.id}))
-    state = state |> List.update_at(index, fn _x -> struct_to_map(game) end)
+    state = state |> List.update_at(index, fn _x -> game end)
     {:reply, game, state}
   end
 
@@ -54,7 +56,8 @@ defmodule Durak.Store do
 
   def handle_call({:get_by_attrs, attrs}, _from, state) do
     attrs = attrs_to_map(attrs)
-    game = state |> Enum.find(&map_contains?(&1, attrs)) |> map_to_struct(Game)
+    game = state |> Enum.find(&map_contains?(&1, attrs))
+    # game = state |> Enum.find(&map_contains?(&1, attrs)) |> map_to_struct(Game)
     {:reply, game, state}
   end
 end

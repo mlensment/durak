@@ -8,8 +8,6 @@ defmodule Durak.Store do
   end
 
   def set(game) do
-    # Enum.each(game.players, &GenServer.call(Store, {:set, &1}))
-    # game = Map.delete(game, :players)
     GenServer.call(Store, {:set, game})
   end
 
@@ -41,7 +39,6 @@ defmodule Durak.Store do
 
   def handle_call({:set, game}, _from, state) do
     {:reply, game, [game | state]}
-    # {:reply, game, [struct_to_map(game) | state]}
   end
 
   def handle_call({:update, game}, _form, state) do
@@ -57,7 +54,6 @@ defmodule Durak.Store do
   def handle_call({:get_by_attrs, attrs}, _from, state) do
     attrs = attrs_to_map(attrs)
     game = state |> Enum.find(&map_contains?(&1, attrs))
-    # game = state |> Enum.find(&map_contains?(&1, attrs)) |> map_to_struct(Game)
     {:reply, game, state}
   end
 end

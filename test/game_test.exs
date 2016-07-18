@@ -35,7 +35,7 @@ defmodule GameTest do
     assert length(game.players) == 1
 
     %{name: name, hand: hand, upcards: upcards, downcards: downcards, status: status} =
-      Enum.at(game.players, 0)
+      hd(game.players)
 
     assert name == "Player 1"
     assert status == "preparing"
@@ -64,7 +64,7 @@ defmodule GameTest do
     downcards = player.downcards
 
     # try to cheat by selecting one of the downcards
-    cheating = [Enum.at(downcards, 0)] ++ [Enum.at(upcards, 0)] ++ [Enum.at(hand, 0)]
+    cheating = [hd(downcards)] ++ [hd(upcards)] ++ [hd(hand)]
     {:error, reason} = Game.prepare_player(player.token, hand: cheating)
 
     assert reason == "Player must select from upcards and hand"
@@ -90,7 +90,7 @@ defmodule GameTest do
 
     Enum.each(game.players, fn x -> Game.prepare_player(x.token, hand: x.upcards) end)
 
-    {game, player} = Game.find_game_and_player(player.token)
+    {game, _player} = Game.find_game_and_player(player.token)
     game = Game.start(game)
     assert game.status == "started"
     game_2 = Game.find_or_create

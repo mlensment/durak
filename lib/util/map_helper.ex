@@ -23,8 +23,7 @@ defmodule Util.MapHelper do
     # (assumes that `nil` is not a legitimate value)
     |> Enum.all?(fn
       {keypath, val} when is_list(val) ->
-        attrs = Enum.at(val, 0)
-        get_in(supermap, keypath) |> Enum.any?(&map_contains?(&1, attrs))
+        get_in(supermap, keypath) |> Enum.any?(&map_contains?(&1, hd(val)))
       {keypath, val} when val != nil ->
         get_in(supermap, keypath) == val
     end)

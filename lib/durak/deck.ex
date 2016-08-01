@@ -22,4 +22,8 @@ defmodule Durak.Deck do
 
     {remaining_deck, player}
   end
+
+  def draw(deck, player) do
+    
+  end
 end

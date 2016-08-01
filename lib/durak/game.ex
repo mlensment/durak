@@ -42,7 +42,7 @@ defmodule Durak.Game do
       Enum.any?(game.players, fn x -> x.status != "ready" end) ->
         {:error, "All players must be ready to start the game"}
       true ->
-        %{game | status: @started, in_turn: List.first(game.players) } |> update
+        %{game | status: @started, in_turn: hd(game.players) } |> update
     end
   end
 
@@ -71,6 +71,39 @@ defmodule Durak.Game do
       game = %{game | players: Player.update_list(game.players, player)} |> update
       {game, player}
     end
+  end
+
+  # Types can be "pile, down"
+  def move(token, cards, type \\ "pile") do
+    {game, player} = find_game_and_player(token)
+
+    cond do
+      player != game.in_turn ->
+        {:error, "It's not your turn"}
+      type == "pile" ->
+        pile(game, player, cards)
+      type == "down" ->
+        down(game, player, cards)
+      true ->
+        {:error, "Invalid move"}
+    end
+  end
+
+  defp pile(game, player, cards) do
+    new_hand = Enum.reduce(cards, player.hand, fn (x, acc) -> List.delete(acc, x) end)
+
+    if length(player.hand) - length(new_hand) != length(cards) do
+      {:error, "Player must select cards from hand"}
+    else
+      # player = %{player | hand: Deck.draw(), upcards: upcards, status: "ready"}
+      # game = %{game | players: Player.update_list(game.players, player)} |> update
+      # {game, player}
+    end
+    # [game.pile ++ cards]
+  end
+
+  defp down(game, player, cards) do
+
   end
 
   defp update(game) do

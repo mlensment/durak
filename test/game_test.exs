@@ -5,8 +5,28 @@ defmodule GameTest do
   alias Durak.Store
   doctest Durak.Game
 
-  setup do
+  setup context do
     Store.clear
+    before(context)
+  end
+
+  defp before(%{with_started_game: true}) do
+    game = Game.find_or_create
+
+    {game, player} =
+      game |>
+      Game.join(Player.create(name: "Player 1")) |>
+      Game.join(Player.create(name: "Player 2"))
+
+    Enum.each(game.players, fn x -> Game.prepare_player(x.token, hand: x.upcards) end)
+
+    {game, _player} = Game.find_game_and_player(player.token)
+    game = Game.start(game)
+
+    {:ok, game: game}
+  end
+
+  defp before(_) do
     {:ok, game: Game.find_or_create}
   end
 
@@ -98,5 +118,24 @@ defmodule GameTest do
 
     assert game.in_turn == List.first(game.players)
     assert length(game.deck) == 37
+  end
+
+  @tag with_started_game: true
+  test "making the first move", state do
+    assert state[:game].status == "started"
+    assert state[:game].in_turn == hd(state[:game].players)
+
+    first_player = state[:game].in_turn
+    second_player = List.last(state[:game].players)
+
+    {:error, reason} = Game.move(second_player.token, [hd(second_player.hand)])
+    assert reason == "It's not your turn"
+
+    {:error, reason} = Game.move(first_player.token, [hd(second_player.hand)])
+    assert reason == "Player must select cards from hand"
+
+    # {game, player} = Game.move(first_player.token, [hd(first_player.hand)])
+    # assert game.pile == [hd(first_player.hand)]
+    # assert length(player.hand) == 3
   end
 end
